@@ -506,23 +506,23 @@ void _blitter(
 
 	int w, int h,
 	
-	int dp, int xflip, int use_arg
+	int xflip
 ) {
+	if (dstrect->x + w > 128) {
+		w -= (dstrect->x + w - 128);
+	}
+
+	if (dstrect->y + h > 128) {
+		h -= (dstrect->y + h - 128);
+	}
+
 	for (int y = 0; y < h; y++) {
 		int dsty = dstrect->y + y;
-
-		if (dsty >= 128) {
-			return;
-		}
 
 		turtle_y(128 - dsty);
 
 		for (int x = 0; x < w; x++) {
 			int dstx = dstrect->x + x;
-
-			if (dstx >= 128) {
-				return;
-			}
 
 			turtle_x(128 - dstx);
 
@@ -534,11 +534,63 @@ void _blitter(
 			unsigned char p = srcpix[srcx_p+(srcy_p)*srcpitch];
 
 			if (p) {
-				turtle_set(use_arg ? dp : p);
+				turtle_set(palette_colors[p % 16]);
 			}
 		}
 	}
 }
+
+void _blitter_masked(
+	uint8_t *srcpix, int srcx, int srcy, int srcpitch,
+
+	SDL_Rect *dstrect, int dst_w,
+
+	int w, int h,
+	
+	int dp, int xflip
+) {
+	if (dstrect->x + w > 128) {
+		w -= (dstrect->x + w - 128);
+	}
+
+	if (dstrect->y + h > 128) {
+		h -= (dstrect->y + h - 128);
+	}
+
+	if (w == 0 || h == 0) {
+		return;
+	}
+
+	// TODO: If x or y are outside the screen, this won't work
+	SDL_SetPixel_screen_palette(dstrect->x, dstrect->y, dp);
+	turtle_copy();
+
+	for (int y = 0; y < h; y++) {
+		int dsty = dstrect->y + y;
+
+		turtle_y(128 - dsty);
+
+		for (int x = 0; x < w; x++) {
+			int dstx = dstrect->x + x;
+
+			turtle_x(128 - dstx);
+
+			int xoff = xflip ? (w-x-1) : (x);
+
+			int srcx_p = srcx + xoff;
+			int srcy_p = srcy + y;
+			
+			unsigned char p = srcpix[srcx_p+(srcy_p)*srcpitch];
+
+			if (p) {
+				SDL_SetPixel_screen_palette(dstx, dsty, dp);
+
+				//turtle_paste();
+			}
+		}
+	}
+}
+
 
 //lots of code from https://github.com/SDL-mirror/SDL/blob/bc59d0d4a2c814900a506d097a381077b9310509/src/video/SDL_surface.c#L625
 //coordinates should be scaled already
@@ -621,25 +673,19 @@ static inline void Xblit(SDL_Surface* src, SDL_Rect* srcrect, SDL_Rect* dstrect,
 		unsigned char* srcpix = (unsigned char*)src->pixels;
 		int srcpitch = src->pitch;
 
-		int ok = 1;
-		int pc;
-		int use_arg;
-
-		if (color && flipx) { pc = color; use_arg = 1; }
-		else if (!color && flipx) { use_arg = 0; }
-		else if (color && !flipx) { pc = color; use_arg = 1; }
-		else if (!color && !flipx) { use_arg = 0; }
-		else { ok = 0; }
-
-		if (ok) {
+		if (color) {
+			_blitter_masked(
+				srcpix, srcx, srcy, srcpitch,
+				dstrect, dst_w,
+				w, h,
+				color, flipx
+			);
+		} else {
 			_blitter(
 				srcpix, srcx, srcy, srcpitch,
-
 				dstrect, dst_w,
-
 				w, h,
-
-				pc, flipx, use_arg
+				flipx
 			);
 		}
 	}

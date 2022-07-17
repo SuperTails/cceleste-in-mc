@@ -137,6 +137,12 @@ SDL_Surface *SDL_LoadBMP(const char *path) {
 
 	uint8_t *pixels = malloc(bmp_hdr.bV4Width * bmp_hdr.bV4Height);
 
+	if (pixels == 0) {
+		free(buf);
+		printf("couldn't allocate pixel buffer\n");
+		return 0;
+	}
+
 	if (bmp_hdr.bV4BitCount == 4) {
 		for (int y = 0; y < bmp_hdr.bV4Height; ++y) {
 			mc_sleep();

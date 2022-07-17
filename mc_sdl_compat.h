@@ -155,7 +155,7 @@ void SDL_FillRect_screen_palette(SDL_Rect *rect, char palette_idx) {
 			w -= (x + w - SCREEN_W);
 		}
 		if (y + h > SCREEN_H) {
-			h -= (y + w - SCREEN_H);
+			h -= (y + h - SCREEN_H);
 		}
 	} else {
 		x = 0;
@@ -164,7 +164,7 @@ void SDL_FillRect_screen_palette(SDL_Rect *rect, char palette_idx) {
 		h = SCREEN_H;
 	}
 
-	if (w == 0 || h == 0) {
+	if (w <= 0 || h <= 0) {
 		return;
 	}
 
