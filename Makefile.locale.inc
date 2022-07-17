@@ -1,0 +1,12 @@
+OBJS_NEWLIB+=uselocale.o
+OBJS_NEWLIB+=lnumeric.o
+OBJS_NEWLIB+=timelocal.o
+OBJS_NEWLIB+=locale.o
+OBJS_NEWLIB+=duplocale.o
+OBJS_NEWLIB+=lmonetary.o
+OBJS_NEWLIB+=localeconv.o
+OBJS_NEWLIB+=freelocale.o
+OBJS_NEWLIB+=lctype.o
+OBJS_NEWLIB+=newlocale.o
+OBJS_NEWLIB+=lmessages.o
+OBJS_NEWLIB+=nl_langinfo.o
